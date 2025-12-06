@@ -121,7 +121,7 @@ export default function SigninScreen({ navigation }: Props) {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.signupButton}
-                onPress={() => navigation.navigate("SignUp")}
+                onPress={() => navigation.navigate("Signup")}
                 activeOpacity={0.8}
               >
                 <Text style={styles.ButtonText}>회원가입</Text>

@@ -1,4 +1,3 @@
-// src/screens/LandingScreen.tsx
 import React, { useEffect, useRef } from "react";
 import {
   SafeAreaView,
@@ -66,7 +65,7 @@ export default function LandingScreen() {
       ),
     ]).start();
   }, [textOpacity, textTranslateY, iconOpacity, iconScale]);
-  
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>

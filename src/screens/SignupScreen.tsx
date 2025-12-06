@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InputBox from "../components/InputBox";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth } from "../../firebaseconfig";
 
 type Props = {
   navigation: any;
@@ -31,14 +33,47 @@ export default function SignupScreen({ navigation }: Props) {
     password.length > 0 &&
     confirmPassword.length > 0;
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     setEmailError(null);
-
     if (!emailRegex.test(email)) {
       setEmailError("올바른 이메일 형식으로 입력해주세요.");
       return;
     }
-    console.log("signup", { email, name, password, confirmPassword });
+
+    if (password.length < 6) {
+      alert("비밀번호는 최소 6자 이상이어야 합니다.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      alert("비밀번호가 서로 일치하지 않습니다.");
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+      const user = userCredential.user;
+
+      await updateProfile(user, {
+        displayName: name,
+      });
+
+      console.log("회원가입 성공:", user.email, user.uid);
+
+      navigation.navigate("Signin")
+
+    } catch (error: any) {
+      console.log("회원가입 오류:", error);
+
+      if (error.code === "auth/email-already-in-use") {
+        alert("이미 사용 중인 이메일입니다.");
+      } else if (error.code === "auth/invalid-email") {
+        alert("유효하지 않은 이메일입니다.");
+      } else {
+        alert("회원가입 중 오류가 발생했습니다. 다시 시도해주세요.");
+      }
+    }
   };
 
   return (
@@ -55,7 +90,7 @@ export default function SignupScreen({ navigation }: Props) {
             <View style={styles.header}>
               <TouchableOpacity
                 style={styles.backButton}
-                onPress={() => navigation.goBack()}
+                onPress={() => navigation.navigate("Signin")}
                 activeOpacity={0.8}
               >
                 <Image
@@ -190,20 +225,6 @@ export default function SignupScreen({ navigation }: Props) {
                 activeOpacity={0.8}
               >
                 <Text style={styles.primaryButtonText}>회원가입 완료</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.googleButton} activeOpacity={0.8}>
-                <View style={styles.googleInner}>
-                  <View style={styles.googleIconBox}>
-                    <Image
-                      source={require("../../assets/GoogleIcon.png")}
-                      style={styles.fieldIcon}
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <Text style={styles.googleButtonText}>
-                    구글 계정으로 로그인하기
-                  </Text>
-                </View>
               </TouchableOpacity>
             </View>
           </View>
