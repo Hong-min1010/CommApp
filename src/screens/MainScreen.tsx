@@ -1,5 +1,4 @@
-// src/screens/MainScreen.tsx
-import React, { useMemo, useState, useRef, useEffect } from "react";
+import React, { useMemo, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -10,45 +9,43 @@ import {
   TouchableOpacity,
 } from "react-native";
 import SearchBar from "../components/SearchBar";
-import PostCard from "../components/Contents/PostCard";
+import PostCard from "../components/PostCard";
 
 type Post = {
   id: string;
   title: string;
   contents: string;
   author: string;
-  createdAtText: string; // 예: "12"
   commentCount: number;
 };
 
-// 임시 더미 데이터
 const DUMMY_POSTS: Post[] = [
-  { id: "1", title: "Title", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 3 },
-  { id: "2", title: "Title", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 1 },
-  { id: "3", title: "Title", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 3 },
-  { id: "4", title: "Title", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 1 },
-  { id: "5", title: "Title", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 3 },
-  { id: "6", title: "Title", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 1 },
-  { id: "7", title: "Title", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 3 },
-  { id: "8", title: "Title", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 1 },
-  { id: "9", title: "Title", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 3 },
-  { id: "10", title: "Title", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 1 },
-  { id: "11", title: "Title", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 3 },
-  { id: "12", title: "Title", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 1 },
-  { id: "13", title: "Title", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 3 },
-  { id: "14", title: "Title55", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 1 },
-  { id: "15", title: "Title56", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 3 },
-  { id: "16", title: "Title5", contents: "Contents", author: "Name", createdAtText: "12", commentCount: 1 },
+  { id: "1", title: "Title", contents: "Contents", author: "Name", commentCount: 3 },
+  { id: "2", title: "Title", contents: "Contents", author: "Name", commentCount: 1 },
+  { id: "3", title: "Title", contents: "Contents", author: "Name", commentCount: 3 },
+  { id: "4", title: "Title", contents: "Contents", author: "Name", commentCount: 1 },
+  { id: "5", title: "Title", contents: "Contents", author: "Name", commentCount: 3 },
+  { id: "6", title: "Title", contents: "Contents", author: "Name", commentCount: 1 },
+  { id: "7", title: "Title", contents: "Contents", author: "Name", commentCount: 3 },
+  { id: "8", title: "Title", contents: "Contents", author: "Name", commentCount: 1 },
+  { id: "9", title: "Title", contents: "Contents", author: "Name", commentCount: 3 },
+  { id: "10", title: "Title", contents: "Contents", author: "Name", commentCount: 1 },
+  { id: "11", title: "Title", contents: "Contents", author: "Name", commentCount: 3 },
+  { id: "12", title: "Title", contents: "Contents", author: "Name", commentCount: 1 },
+  { id: "13", title: "Title", contents: "Contents", author: "Name", commentCount: 3 },
+  { id: "14", title: "Title55", contents: "Contents", author: "Name", commentCount: 1 },
+  { id: "15", title: "Title56", contents: "Contents", author: "Name", commentCount: 3 },
+  { id: "16", title: "Title5", contents: "Contents", author: "Name", commentCount: 1 },
 ];
 
 type Props = {
   navigation: any;
-  nickname?: string; // 없으면 기본 "Name"
+  nickname?: string;
 };
 
 export default function MainScreen({ navigation, nickname = "Name" }: Props) {
   const [keyword, setKeyword] = useState("");
-  const [viewedCount, setViewedCount] = useState(0); // 지금까지 본 게시글 개수
+  const [viewedCount, setViewedCount] = useState(0);
 
   const filteredPosts = useMemo(() => {
     if (!keyword.trim()) return DUMMY_POSTS;
@@ -60,7 +57,6 @@ export default function MainScreen({ navigation, nickname = "Name" }: Props) {
 
   const totalCount = filteredPosts.length;
 
-  // 지금까지 본(최대 index) / 전체 개수 로 게이지 계산
   const progress =
     totalCount === 0 ? 0 : Math.min(1, viewedCount / totalCount);
 
@@ -68,12 +64,17 @@ export default function MainScreen({ navigation, nickname = "Name" }: Props) {
     console.log("search keyword:", keyword);
   };
 
-  // 화면에 보이는 아이템이 바뀔 때마다 호출
+  const handleLogout = async () => {
+    try {
+      navigation.replace("SignIn");
+    } catch (error) {
+      console.log("logout error:", error);
+    }
+  };
+
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: Array<ViewToken> }) => {
       if (viewableItems.length === 0) return;
-
-      // 현재 화면에 보이는 아이템 중 가장 큰 index = 현재 위치
       const maxIndex = viewableItems.reduce((max, item) => {
         const idx = item.index ?? 0;
         return idx > max ? idx : max;
@@ -85,13 +86,19 @@ export default function MainScreen({ navigation, nickname = "Name" }: Props) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* 상단 초록색 Header */}
         <View style={styles.header}>
-          <Text style={styles.headerHello}>Hello,</Text>
-          <Text style={styles.headerName}>{nickname}</Text>
+          <View>
+            <Text style={styles.headerHello}>Hello,</Text>
+            <Text style={styles.headerName}>{nickname}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            activeOpacity={0.7}
+            onPress={handleLogout}
+          >
+            <Text style={styles.logoutButtonText}>로그아웃</Text>
+          </TouchableOpacity>
         </View>
-
-        {/* SearchBar */}
         <View style={styles.searchWrapper}>
           <SearchBar
             value={keyword}
@@ -100,8 +107,6 @@ export default function MainScreen({ navigation, nickname = "Name" }: Props) {
             placeholder="게시글 제목을 입력해주세요."
           />
         </View>
-
-        {/* 게이지 바 */}
         <View style={styles.gaugeWrapper}>
           <View style={styles.gaugeBackground}>
             <View style={[styles.gaugeFill, { width: `${progress * 100}%` }]} />
@@ -118,8 +123,6 @@ export default function MainScreen({ navigation, nickname = "Name" }: Props) {
             <Text style={styles.createButtonText}>게시글 작성</Text>
           </TouchableOpacity>
         </View>
-
-        {/* 게시글 그리드 */}
         <FlatList
           data={filteredPosts}
           keyExtractor={(item) => item.id}
@@ -131,7 +134,6 @@ export default function MainScreen({ navigation, nickname = "Name" }: Props) {
               title={item.title}
               contents={item.contents}
               author={item.author}
-              createdAtText={item.createdAtText}
               commentCount={item.commentCount}
               onPress={() => {
                 console.log("press post:", item.id);
@@ -157,14 +159,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-
-  /* Header */
   header: {
     height: HEADER_HEIGHT,
     backgroundColor: "#4CAF7D",
     paddingHorizontal: 24,
-    justifyContent: "flex-end",
     paddingBottom: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+  },
+  logoutButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 8,
+  },
+  logoutButtonText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "600",
   },
   headerHello: {
     fontSize: 18,
@@ -175,15 +188,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#FFFFFF",
   },
-
-  /* SearchBar */
   searchWrapper: {
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 16,
     paddingTop: 12,
   },
-
-  /* Gauge */
   gaugeWrapper: {
     paddingHorizontal: 16,
     paddingTop: 8,
@@ -199,8 +208,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#7C83FF",
     borderRadius: 2,
   },
-
-  /* Count text */
   countWrapper: {
     alignItems: "center",
     marginTop: 12,
@@ -209,8 +216,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111827",
   },
-
-  /* Post list */
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 16,

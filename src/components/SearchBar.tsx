@@ -39,7 +39,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <View style={styles.wrapper}>
-      {/* 검색 아이콘 영역 */}
       <View style={styles.iconBox}>
         <Image
           source={require("../../assets/SearchIcon.png")}
@@ -47,8 +46,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
           resizeMode="contain"
         />
       </View>
-
-      {/* 입력창 */}
       <View style={styles.inputContainer}>
         <TextInput
           value={value}
@@ -65,8 +62,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
           onFocus={onFocus}
         />
       </View>
-
-      {/* 에러 메시지 */}
       {touched && !!errorMessage && (
         <Text style={styles.errorText}>{errorMessage}</Text>
       )}
@@ -98,7 +93,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "#111827",
   },
-  // 아이콘을 이미지로 쓸 경우
   iconImage: {
     width: 20,
     height: 20,
@@ -112,7 +106,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#D1D5DB",
-    paddingLeft: 44, // 아이콘 영역만큼 여백
+    paddingLeft: 44,
     paddingRight: 12,
     fontSize: 14,
     color: "#111827",

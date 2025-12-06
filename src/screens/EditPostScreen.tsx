@@ -1,4 +1,3 @@
-// src/screens/EditPostScreen.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -19,18 +18,15 @@ type Props = {
 };
 
 export default function EditPostScreen({ navigation }: Props) {
-  // ← 실제론 route.params 등으로 받아오면 됨
   const [title, setTitle] = useState("현재 제목");
   const [contents, setContents] = useState("현재 내용");
   const [hasImage, setHasImage] = useState(true);
 
   const handleUpdate = () => {
-    // TODO: 수정 API 연동
     console.log("update post", { title, contents, hasImage });
   };
 
   const handleChangeImage = () => {
-    // TODO: 이미지 수정(재선택) 로직
     console.log("change image");
   };
 
@@ -45,7 +41,6 @@ export default function EditPostScreen({ navigation }: Props) {
         style={styles.safeArea}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        {/* 상단 헤더 */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -61,14 +56,11 @@ export default function EditPostScreen({ navigation }: Props) {
 
           <Text style={styles.headerTitle}>게시글 수정</Text>
         </View>
-
-        {/* 내용 + 버튼 스크롤 */}
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          {/* 제목 */}
           <View style={styles.fieldBlock}>
             <Text style={styles.label}>제목</Text>
             <InputBox
@@ -78,8 +70,6 @@ export default function EditPostScreen({ navigation }: Props) {
               inputStyle={styles.titleInput}
             />
           </View>
-
-          {/* 내용 */}
           <View style={styles.fieldBlock}>
             <Text style={styles.label}>내용</Text>
             <TextInput
@@ -92,8 +82,6 @@ export default function EditPostScreen({ navigation }: Props) {
               style={styles.contentsInput}
             />
           </View>
-
-          {/* 이미지 박스 */}
           {hasImage && (
             <View style={styles.imageBox}>
               <View style={styles.imageInner}>
@@ -105,8 +93,6 @@ export default function EditPostScreen({ navigation }: Props) {
               </View>
             </View>
           )}
-
-          {/* 이미지 수정/삭제 버튼 */}
           <View style={styles.imageButtonRow}>
             <TouchableOpacity
               style={[styles.imageButton, styles.imageButtonEdit]}
@@ -124,8 +110,6 @@ export default function EditPostScreen({ navigation }: Props) {
               <Text style={styles.imageButtonText}>이미지 삭제</Text>
             </TouchableOpacity>
           </View>
-
-          {/* 수정 완료 버튼 */}
           <View style={styles.bottomButtonWrapper}>
             <TouchableOpacity
               style={styles.submitButton}
@@ -148,8 +132,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-
-  /* Header */
   header: {
     height: HEADER_HEIGHT,
     backgroundColor: "#4CAF7D",
@@ -178,8 +160,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#FFFFFF",
   },
-
-  /* Scroll */
   scroll: {
     flex: 1,
     backgroundColor: "#FFFFFF",
@@ -189,8 +169,6 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 32,
   },
-
-  /* Fields */
   fieldBlock: {
     marginBottom: 20,
   },
@@ -216,8 +194,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111827",
   },
-
-  /* Image area */
   imageBox: {
     marginTop: 8,
     borderRadius: 16,
@@ -234,8 +210,6 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
   },
-
-  /* Image buttons */
   imageButtonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -261,8 +235,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#FFFFFF",
   },
-
-  /* Bottom submit */
   bottomButtonWrapper: {
     marginTop: 40,
   },

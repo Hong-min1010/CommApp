@@ -1,4 +1,3 @@
-// src/screens/SignUpScreen.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -39,14 +38,6 @@ export default function SignupScreen({ navigation }: Props) {
       setEmailError("올바른 이메일 형식으로 입력해주세요.");
       return;
     }
-
-    if (password !== confirmPassword) {
-      // 필요하면 나중에 별도 에러 상태로 관리해도 됨
-      alert("비밀번호가 일치하지 않습니다.");
-      return;
-    }
-
-    // TODO: Firebase Auth 회원가입 연결 예정
     console.log("signup", { email, name, password, confirmPassword });
   };
 
@@ -61,7 +52,6 @@ export default function SignupScreen({ navigation }: Props) {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.container}>
-            {/* 상단 초록 영역 + 로고 + 뒤로가기 버튼 */}
             <View style={styles.header}>
               <TouchableOpacity
                 style={styles.backButton}
@@ -83,13 +73,8 @@ export default function SignupScreen({ navigation }: Props) {
                 />
               </View>
             </View>
-
-            {/* 폼 영역 */}
             <View style={styles.formContainer}>
-              {/* 타이틀 */}
               <Text style={styles.title}>Signup</Text>
-
-              {/* Email */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>Email</Text>
                 <View style={styles.inputRow}>
@@ -118,14 +103,11 @@ export default function SignupScreen({ navigation }: Props) {
                   <Text style={styles.errorText}>{emailError}</Text>
                 )}
               </View>
-
-              {/* Name */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>Name</Text>
                 <View style={styles.inputRow}>
                   <View style={styles.iconBox}>
                     <Image
-                      // 사람 아이콘으로 된 이미지 파일로 교체해서 사용하면 됨
                       source={require("../../assets/NameIcon.png")}
                       style={styles.fieldIcon}
                       resizeMode="contain"
@@ -146,8 +128,6 @@ export default function SignupScreen({ navigation }: Props) {
                   </View>
                 </View>
               </View>
-
-              {/* Password */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>Password</Text>
                 <View style={styles.inputRow}>
@@ -174,8 +154,6 @@ export default function SignupScreen({ navigation }: Props) {
                   </View>
                 </View>
               </View>
-
-              {/* Confirm Password */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>ConfirmPassword</Text>
                 <View style={styles.inputRow}>
@@ -202,8 +180,6 @@ export default function SignupScreen({ navigation }: Props) {
                   </View>
                 </View>
               </View>
-
-              {/* 회원가입 완료 버튼 */}
               <TouchableOpacity
                 style={[
                   styles.primaryButton,
@@ -215,8 +191,6 @@ export default function SignupScreen({ navigation }: Props) {
               >
                 <Text style={styles.primaryButtonText}>회원가입 완료</Text>
               </TouchableOpacity>
-
-              {/* 구글 로그인 버튼 */}
               <TouchableOpacity style={styles.googleButton} activeOpacity={0.8}>
                 <View style={styles.googleInner}>
                   <View style={styles.googleIconBox}>

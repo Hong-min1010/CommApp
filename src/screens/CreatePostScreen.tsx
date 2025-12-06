@@ -1,4 +1,3 @@
-// src/screens/CreatePostScreen.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -23,12 +22,10 @@ export default function CreatePostScreen({ navigation }: Props) {
   const [contents, setContents] = useState("");
 
   const handleSubmit = () => {
-    // TODO: 실제 게시글 작성 로직 연동 (예: Firebase / API)
     console.log("create post", { title, contents });
   };
 
   const handlePickImage = () => {
-    // TODO: 이미지 선택 로직 (ImagePicker 등)
     console.log("pick image");
   };
 
@@ -38,7 +35,6 @@ export default function CreatePostScreen({ navigation }: Props) {
         style={styles.safeArea}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        {/* 상단 헤더 */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -54,14 +50,11 @@ export default function CreatePostScreen({ navigation }: Props) {
 
           <Text style={styles.headerTitle}>게시글 작성</Text>
         </View>
-
-        {/* 내용 영역 + 버튼까지 모두 스크롤 */}
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          {/* 제목 */}
           <View style={styles.fieldBlock}>
             <Text style={styles.label}>제목</Text>
             <InputBox
@@ -71,8 +64,6 @@ export default function CreatePostScreen({ navigation }: Props) {
               inputStyle={styles.titleInput}
             />
           </View>
-
-          {/* 내용 */}
           <View style={styles.fieldBlock}>
             <Text style={styles.label}>내용</Text>
             <TextInput
@@ -85,8 +76,6 @@ export default function CreatePostScreen({ navigation }: Props) {
               style={styles.contentsInput}
             />
           </View>
-
-          {/* 이미지 첨부 영역 */}
           <TouchableOpacity
             style={styles.imageAttachBox}
             activeOpacity={0.8}
@@ -99,8 +88,6 @@ export default function CreatePostScreen({ navigation }: Props) {
             />
             <Text style={styles.imageAttachText}>이미지 첨부</Text>
           </TouchableOpacity>
-
-          {/* 하단 작성 완료 버튼 (스크롤 안에 위치) */}
           <View style={styles.bottomButtonWrapper}>
             <TouchableOpacity
               style={styles.submitButton}
@@ -152,8 +139,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#FFFFFF",
   },
-
-  /* Scroll area */
   scroll: {
     flex: 1,
     backgroundColor: "#FFFFFF",
@@ -161,10 +146,8 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 24,
     paddingTop: 24,
-    paddingBottom: 32, // 아래 여백
+    paddingBottom: 32,
   },
-
-  /* Fields */
   fieldBlock: {
     marginBottom: 20,
   },
@@ -190,8 +173,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111827",
   },
-
-  /* Image attach */
   imageAttachBox: {
     marginTop: 8,
     borderRadius: 16,

@@ -1,4 +1,3 @@
-// src/screens/SignInScreen.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -33,7 +32,6 @@ export default function SigninScreen({ navigation }: Props) {
       setEmailError("올바른 이메일 형식으로 입력해주세요.");
       return;
     }
-    // TODO: Firebase Auth 연결 예정
     console.log("login", email, password);
   };
 
@@ -48,26 +46,19 @@ export default function SigninScreen({ navigation }: Props) {
           keyboardShouldPersistTaps='handled'
         >
           <View style={styles.container}>
-            {/* 상단 초록 영역 + 아이콘 */}
             <View style={styles.header}>
               <View style={styles.iconCircle}>
                 <Image
-                  source={require("../../assets/MainIcon.png")} // 랜딩에서 쓰던 아이콘
+                  source={require("../../assets/MainIcon.png")}
                   style={styles.iconImage}
                   resizeMode="contain"
                 />
               </View>
             </View>
-
-            {/* 폼 영역 */}
             <View style={styles.formContainer}>
-              {/* 타이틀 */}
               <Text style={styles.signinTitle}>Signin</Text>
-
-              {/* Email */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>Email</Text>
-
                 <View style={styles.inputRow}>
                   <View style={styles.iconBox}>
                     <Image
@@ -76,7 +67,6 @@ export default function SigninScreen({ navigation }: Props) {
                       resizeMode="contain"
                     />
                   </View>
-
                   <View style={{ flex: 1 }}>
                     <InputBox
                       value={email}
@@ -91,15 +81,10 @@ export default function SigninScreen({ navigation }: Props) {
                     />
                   </View>
                 </View>
-
                 {emailError && <Text style={styles.errorText}>{emailError}</Text>}
               </View>
-
-
-              {/* Password */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>Password</Text>
-
                 <View style={styles.inputRow}>
                   <View style={styles.iconBox}>
                     <Image
@@ -108,7 +93,6 @@ export default function SigninScreen({ navigation }: Props) {
                       resizeMode="contain"
                     />
                   </View>
-
                   <View style={{ flex: 1 }}>
                     <InputBox
                       value={password}
@@ -124,9 +108,6 @@ export default function SigninScreen({ navigation }: Props) {
                   </View>
                 </View>
               </View>
-
-
-              {/* Login 버튼 */}
               <TouchableOpacity
                 style={[
                   styles.loginButton,
@@ -138,8 +119,6 @@ export default function SigninScreen({ navigation }: Props) {
               >
                 <Text style={styles.loginButtonText}>Login</Text>
               </TouchableOpacity>
-
-              {/* 회원가입 버튼 */}
               <TouchableOpacity
                 style={styles.signupButton}
                 onPress={() => navigation.navigate("SignUp")}
@@ -147,8 +126,6 @@ export default function SigninScreen({ navigation }: Props) {
               >
                 <Text style={styles.ButtonText}>회원가입</Text>
               </TouchableOpacity>
-
-              {/* 구글 로그인 버튼 (디자인만) */}
               <TouchableOpacity
                 style={styles.googleButton}
                 activeOpacity={0.8}

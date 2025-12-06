@@ -1,4 +1,3 @@
-// src/components/PostCard.tsx
 import React from "react";
 import {
   View,
@@ -7,12 +6,12 @@ import {
   TouchableOpacity,
   GestureResponderEvent,
 } from "react-native";
+import { Image } from "react-native";
 
 type PostCardProps = {
   title: string;
   contents: string;
   author: string;
-  createdAtText: string; // 예: "12" (날짜 or 시간)
   commentCount?: number;
   onPress?: (event: GestureResponderEvent) => void;
 };
@@ -21,7 +20,6 @@ const PostCard: React.FC<PostCardProps> = ({
   title,
   contents,
   author,
-  createdAtText,
   commentCount = 0,
   onPress,
 }) => {
@@ -31,32 +29,30 @@ const PostCard: React.FC<PostCardProps> = ({
       activeOpacity={0.8}
       onPress={onPress}
     >
-      {/* 상단 Title 영역 */}
       <View style={styles.titleBox}>
         <Text style={styles.titleText} numberOfLines={1}>
           {title}
         </Text>
       </View>
 
-      {/* 본문 미리보기 영역 */}
       <View style={styles.contentBox}>
         <Text style={styles.contentText} numberOfLines={2}>
           {contents}
         </Text>
       </View>
 
-      {/* 하단 작성자 / 날짜 / 댓글 */}
       <View style={styles.footer}>
         <Text style={styles.authorText} numberOfLines={1}>
           {author}
         </Text>
 
         <View style={styles.footerRight}>
-          <Text style={styles.dateText}>{createdAtText}</Text>
-
           <View style={styles.commentBox}>
-            {/* 말풍선 아이콘은 일단 텍스트로 */}
-            <Text style={styles.commentIcon}>💬</Text>
+            <Image
+              source={require("../../assets/CommentIcon.png")}
+              style={styles.commentIcon}
+              resizeMode="contain"
+            />
             <Text style={styles.commentCount}>{commentCount}</Text>
           </View>
         </View>
@@ -69,7 +65,7 @@ export default PostCard;
 
 const styles = StyleSheet.create({
   card: {
-    width: "48%", // 두 칼럼 그리드용
+    width: "48%",
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#111827",
@@ -91,7 +87,7 @@ const styles = StyleSheet.create({
   contentBox: {
     paddingHorizontal: 8,
     paddingVertical: 8,
-    backgroundColor: "#F5F1E5", // Figma의 연노랑 배경 느낌
+    backgroundColor: "#F5F1E5",
   },
   contentText: {
     fontSize: 12,
@@ -123,8 +119,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   commentIcon: {
-    fontSize: 12,
-    marginRight: 2,
+    width: 12,
+    height: 12,
   },
   commentCount: {
     fontSize: 12,
