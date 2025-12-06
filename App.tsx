@@ -1,9 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import ComponentsPreviewScreen from './src/screens/ComponentsPreview';
+import { useEffect } from 'react';
 
 
 export default function App() {
+
   return (
     <>
       <ComponentsPreviewScreen />

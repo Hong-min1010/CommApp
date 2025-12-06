@@ -1,3 +1,4 @@
+// src/screens/SigninScreen.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -5,13 +6,15 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  TextInput,
   TouchableOpacity,
   Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import InputBox from "../components/InputBox";
 import { ScrollView } from "react-native";
+import InputBox from "../components/InputBox";
+import ToastMessage from "../components/ToastMessage";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebaseconfig";
 
 type Props = {
   navigation: any;
@@ -21,18 +24,77 @@ export default function SigninScreen({ navigation }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
-  const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+
+  const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
   const isLoginEnabled = email.length > 0 && password.length > 0;
 
-  const handleLogin = () => {
-    setEmailError(null);
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToastType(type);
+    setToastMessage(message);
+    setToastVisible(true);
 
-    if(!emailRegex.test(email)) {
-      setEmailError("올바른 이메일 형식으로 입력해주세요.");
+    setTimeout(() => {
+      setToastVisible(false);
+    }, 1500);
+  };
+
+  const handleLogin = async () => {
+    setEmailError(null);
+    setLoginError(null);
+
+    if (!emailRegex.test(email)) {
+      const msg = "올바른 이메일 형식으로 입력해주세요.";
+      setEmailError(msg);
+      showToast(msg, "error");
       return;
     }
-    console.log("login", email, password);
+
+    try {
+      setLoading(true);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log("로그인 성공:", user.email, user.uid);
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: "Main",
+            params: {
+              toastMessage: "로그인에 성공했습니다.",
+              toastType: "success",
+            },
+          },
+        ],
+      });
+    } catch (error: any) {
+      console.log("로그인 오류:", error.code, error.message);
+
+      if (
+        error.code === "auth/user-not-found" ||
+        error.code === "auth/wrong-password" ||
+        error.code === "auth/invalid-credential"
+      ) {
+        const msg = "이메일 또는 비밀번호가 올바르지 않습니다.";
+        setLoginError(msg);
+        showToast(msg, "error");
+      } else if (error.code === "auth/invalid-email") {
+        const msg = "유효하지 않은 이메일 형식입니다.";
+        setLoginError(msg);
+        showToast(msg, "error");
+      } else {
+        const msg = "로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+        setLoginError(msg);
+        showToast(msg, "error");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,7 +105,7 @@ export default function SigninScreen({ navigation }: Props) {
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps='handled'
+          keyboardShouldPersistTaps="handled"
         >
           <View style={styles.container}>
             <View style={styles.header}>
@@ -98,6 +160,7 @@ export default function SigninScreen({ navigation }: Props) {
                       value={password}
                       onChangeText={setPassword}
                       placeholder="비밀번호를 입력해주세요."
+                      secureTextEntry
                       inputStyle={{
                         borderTopLeftRadius: 0,
                         borderBottomLeftRadius: 0,
@@ -108,16 +171,19 @@ export default function SigninScreen({ navigation }: Props) {
                   </View>
                 </View>
               </View>
+              {loginError && <Text style={styles.errorText}>{loginError}</Text>}
               <TouchableOpacity
                 style={[
                   styles.loginButton,
-                  !isLoginEnabled && styles.loginButtonDisabled,
+                  (!isLoginEnabled || loading) && styles.loginButtonDisabled,
                 ]}
-                disabled={!isLoginEnabled}
+                disabled={!isLoginEnabled || loading}
                 onPress={handleLogin}
                 activeOpacity={0.8}
               >
-                <Text style={styles.loginButtonText}>Login</Text>
+                <Text style={styles.loginButtonText}>
+                  {loading ? "로그인 중..." : "Login"}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.signupButton}
@@ -126,25 +192,15 @@ export default function SigninScreen({ navigation }: Props) {
               >
                 <Text style={styles.ButtonText}>회원가입</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.googleButton}
-                activeOpacity={0.8}
-              >
-                <View style={styles.googleInner}>
-                  <View style={styles.googleIconBox}>
-                    <Image
-                      source={require("../../assets/GoogleIcon.png")}
-                      style={styles.iconStyle}
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <Text style={styles.ButtonText}>구글 계정으로 로그인하기</Text>
-                </View>
-              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <ToastMessage
+        visible={toastVisible}
+        message={toastMessage}
+        type={toastType}
+      />
     </SafeAreaView>
   );
 }
@@ -217,8 +273,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 12,
     backgroundColor: "#4CAF7D",
     borderWidth: 1,
-    borderColor: 'black',
-    borderStyle: 'solid',
+    borderColor: "black",
     borderRightWidth: 0,
     alignItems: "center",
     justifyContent: "center",
@@ -278,33 +333,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  googleButton: {
-    marginTop: 16,
-    height: 52,
-    borderRadius: 12,
-    backgroundColor: "#8a8a8aff",
-    alignItems: "center",
-    justifyContent: "center",
+  errorText: {
+    color: "red",
   },
-  googleInner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  googleIconBox: {
-    width: 28,
-    height: 28,
-    borderRadius: 10,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 8,
-  },
-  errorText : {
-    color: 'red'
-  },
-  iconStyle : {
+  iconStyle: {
     width: 20,
     height: 20,
-  }
+  },
 });

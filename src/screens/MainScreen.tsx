@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,10 @@ import {
 } from "react-native";
 import SearchBar from "../components/SearchBar";
 import PostCard from "../components/PostCard";
+import { signOut } from "firebase/auth";
+import { auth } from "../../firebaseconfig";
+import { RouteProp } from "@react-navigation/native";
+import ToastMessage from "../components/ToastMessage";
 
 type Post = {
   id: string;
@@ -38,14 +42,38 @@ const DUMMY_POSTS: Post[] = [
   { id: "16", title: "Title5", contents: "Contents", author: "Name", commentCount: 1 },
 ];
 
+type RootStackParamList = {
+  Main: {
+    toastMessage?: string;
+    toastType?: "success" | "error";
+  } | undefined;
+};
+
 type Props = {
   navigation: any;
+    route: RouteProp<RootStackParamList, "Main">;
   nickname?: string;
 };
 
-export default function MainScreen({ navigation, nickname = "Name" }: Props) {
+export default function MainScreen({ navigation, route, nickname = "Name" }: Props) {
   const [keyword, setKeyword] = useState("");
   const [viewedCount, setViewedCount] = useState(0);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToastType(type);
+    setToastMessage(message);
+    setToastVisible(true);
+    setTimeout(() => setToastVisible(false), 1500);
+  };
+
+  useEffect(() => {
+    if (route.params?.toastMessage) {
+      showToast(route.params.toastMessage, route.params.toastType || "success");
+      navigation.setParams({ toastMessage: undefined, toastType: undefined });
+    }
+  }, [route.params, navigation]);
 
   const filteredPosts = useMemo(() => {
     if (!keyword.trim()) return DUMMY_POSTS;
@@ -66,7 +94,9 @@ export default function MainScreen({ navigation, nickname = "Name" }: Props) {
 
   const handleLogout = async () => {
     try {
-      navigation.replace("SignIn");
+      await signOut(auth);
+
+      navigation.navigate("Signin")
     } catch (error) {
       console.log("logout error:", error);
     }
@@ -144,6 +174,11 @@ export default function MainScreen({ navigation, nickname = "Name" }: Props) {
           onViewableItemsChanged={onViewableItemsChanged}
         />
       </View>
+      <ToastMessage
+        visible={toastVisible}
+        message={toastMessage}
+        type={toastType}
+      />
     </SafeAreaView>
   );
 }
