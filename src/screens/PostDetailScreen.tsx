@@ -1,4 +1,3 @@
-// src/screens/PostDetailScreen.tsx
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -15,8 +14,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { RouteProp } from "@react-navigation/native";
-
-// 🔥 Firebase
 import {
   addDoc,
   collection,
@@ -32,7 +29,6 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../../firebaseconfig";
 
-// ✅ ConfirmModal & Toast
 import ConfirmModal from "../components/ConfirmModal";
 import ToastMessage from "../components/ToastMessage";
 
@@ -88,23 +84,14 @@ export default function PostDetailScreen({ navigation, route }: Props) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingPost, setLoadingPost] = useState(true);
   const [loadingComments, setLoadingComments] = useState(true);
-
-  // 새 댓글 작성
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-
-  // 댓글 inline 수정
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
-
-  // 게시글 삭제 모달
   const [deletePostModalVisible, setDeletePostModalVisible] = useState(false);
-  // 댓글 삭제 모달
   const [deleteCommentModalVisible, setDeleteCommentModalVisible] =
     useState(false);
   const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
-
-  // ✅ Toast
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] =
@@ -119,7 +106,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
 
   const currentUser = auth.currentUser;
 
-  // ✅ EditPostScreen 등에서 돌아올 때 전달받은 토스트 처리 (게시글 수정 성공)
   useEffect(() => {
     if (route.params?.toastMessage) {
       showToast(route.params.toastMessage, route.params.toastType || "success");
@@ -131,7 +117,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
     }
   }, [route.params, navigation]);
 
-  // 🔥 게시글 실시간 구독
   useEffect(() => {
     const postRef = doc(db, "posts", postId);
     const unsub = onSnapshot(
@@ -164,7 +149,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
         setLoadingPost(false);
       },
       (error) => {
-        console.log("post subscribe error:", error);
         setLoadingPost(false);
         if (navigation.canGoBack()) navigation.goBack();
       }
@@ -172,7 +156,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
     return () => unsub();
   }, [postId, navigation]);
 
-  // 🔥 댓글 실시간 구독
   useEffect(() => {
     const commentsRef = collection(db, "posts", postId, "comments");
     const q = query(commentsRef, orderBy("createdAt", "asc"));
@@ -193,14 +176,12 @@ export default function PostDetailScreen({ navigation, route }: Props) {
         setLoadingComments(false);
       },
       (error) => {
-        console.log("comments subscribe error:", error);
         setLoadingComments(false);
       }
     );
     return () => unsub();
   }, [postId]);
 
-  // ---------------- 게시글 수정 / 삭제 ----------------
   const handlePostEdit = () => {
     if (!post) return;
 
@@ -225,14 +206,11 @@ export default function PostDetailScreen({ navigation, route }: Props) {
       const postRef = doc(db, "posts", post.id);
       await deleteDoc(postRef);
 
-      // 🔥 Main 화면으로 이동하면서 토스트 메시지 전달
       navigation.navigate("Main", {
         toastMessage: "게시글이 삭제되었습니다.",
         toastType: "success",
       });
     } catch (error) {
-      console.log("❌ delete post error:", error);
-      Alert.alert("알림", "게시글 삭제 중 오류가 발생했습니다.");
       showToast("게시글 삭제 중 오류가 발생했습니다.", "error");
     }
   };
@@ -241,7 +219,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
     setDeletePostModalVisible(false);
   };
 
-  // ---------------- 댓글 등록 (새 댓글) ----------------
   const handleCommentSubmit = async () => {
     const trimmed = newComment.trim();
     if (!trimmed) return;
@@ -271,17 +248,12 @@ export default function PostDetailScreen({ navigation, route }: Props) {
       });
 
       setNewComment("");
-      // (원하면 여기도 토스트 추가 가능)
     } catch (error) {
-      console.log("add comment error:", error);
-      Alert.alert("알림", "댓글 등록 중 오류가 발생했습니다.");
       showToast("댓글 등록 중 오류가 발생했습니다.", "error");
     } finally {
       setIsSubmittingComment(false);
     }
   };
-
-  // ---------------- 댓글 inline 수정 ----------------
   const handleCommentEditPress = (comment: Comment) => {
     setEditingCommentId(comment.id);
     setEditingCommentText(comment.content);
@@ -296,7 +268,7 @@ export default function PostDetailScreen({ navigation, route }: Props) {
     if (!editingCommentId) return;
     const trimmed = editingCommentText.trim();
     if (!trimmed) {
-      Alert.alert("알림", "댓글 내용을 입력해주세요.");
+      showToast("댓글 내용을 입력해주세요.", "error");
       return;
     }
 
@@ -307,13 +279,10 @@ export default function PostDetailScreen({ navigation, route }: Props) {
       setEditingCommentText("");
       showToast("댓글이 수정되었습니다.", "success");
     } catch (error) {
-      console.log("update comment error:", error);
-      Alert.alert("알림", "댓글 수정 중 오류가 발생했습니다.");
       showToast("댓글 수정 중 오류가 발생했습니다.", "error");
     }
   };
 
-  // ---------------- 댓글 삭제 (모달 + 안전한 카운트) ----------------
   const handleCommentDeletePress = (comment: Comment) => {
     setCommentToDelete(comment);
     setDeleteCommentModalVisible(true);
@@ -322,7 +291,7 @@ export default function PostDetailScreen({ navigation, route }: Props) {
   const handleConfirmDeleteComment = async () => {
     if (!commentToDelete) return;
     if (!currentUser) {
-      Alert.alert("알림", "로그인 후 이용 가능합니다.");
+      showToast("로그인 후 이용 가능합니다.", "error");
       return;
     }
 
@@ -351,8 +320,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
 
       showToast("댓글이 삭제되었습니다.", "success");
     } catch (error) {
-      console.log("delete comment error:", error);
-      Alert.alert("알림", "댓글 삭제 중 오류가 발생했습니다.");
       showToast("댓글 삭제 중 오류가 발생했습니다.", "error");
     } finally {
       setCommentToDelete(null);
@@ -363,8 +330,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
     setDeleteCommentModalVisible(false);
     setCommentToDelete(null);
   };
-
-  // --------------------------------------------------
 
   const isMyPost = post && currentUser && post.authorId === currentUser.uid;
 
@@ -387,7 +352,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
         style={styles.safeArea}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        {/* 헤더 */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -409,7 +373,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          {/* 제목 + 수정/삭제 */}
           <View style={styles.titleRow}>
             <Text style={styles.titleText}>{post.title}</Text>
 
@@ -435,7 +398,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
 
           <View style={styles.divider} />
 
-          {/* 메타 정보 (작성자 이름 + 날짜) */}
           <View style={styles.metaRow}>
             <Text style={styles.metaAuthor}>{post.authorName}</Text>
             <Text style={styles.metaDate}>{dateText}</Text>
@@ -443,12 +405,10 @@ export default function PostDetailScreen({ navigation, route }: Props) {
 
           <View style={styles.divider} />
 
-          {/* 본문 */}
           <View style={styles.bodyBlock}>
             <Text style={styles.bodyText}>{post.contents}</Text>
           </View>
 
-          {/* 이미지 */}
           {post.imageUrl ? (
             <View style={styles.imageBox}>
               <Image
@@ -461,14 +421,12 @@ export default function PostDetailScreen({ navigation, route }: Props) {
 
           <View style={[styles.divider, { marginTop: 24 }]} />
 
-          {/* 댓글 헤더 */}
           <View style={styles.commentHeaderRow}>
             <Text style={styles.commentHeaderText}>
               댓글 {loadingComments ? "..." : comments.length}
             </Text>
           </View>
 
-          {/* 새 댓글 입력 */}
           <View style={styles.commentInputRow}>
             <View style={styles.commentInputWrapper}>
               <TextInput
@@ -496,7 +454,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
             </TouchableOpacity>
           </View>
 
-          {/* 댓글 리스트 */}
           <View style={styles.commentList}>
             {comments.map((comment) => {
               const mine =
@@ -536,7 +493,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
                     </View>
                   </View>
 
-                  {/* 내용 / 수정 인풋 */}
                   <View style={styles.commentContentBlock}>
                     {isEditing ? (
                       <>
@@ -588,7 +544,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* 게시글 삭제 모달 */}
       <ConfirmModal
         visible={deletePostModalVisible}
         title="게시글 삭제"
@@ -599,7 +554,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
         onCancel={handleCancelDeletePost}
       />
 
-      {/* 댓글 삭제 모달 */}
       <ConfirmModal
         visible={deleteCommentModalVisible}
         title="댓글 삭제"
@@ -610,7 +564,6 @@ export default function PostDetailScreen({ navigation, route }: Props) {
         onCancel={handleCancelDeleteComment}
       />
 
-      {/* ✅ ToastMessage */}
       <ToastMessage
         visible={toastVisible}
         message={toastMessage}

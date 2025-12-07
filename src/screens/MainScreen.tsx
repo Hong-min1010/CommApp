@@ -1,4 +1,3 @@
-// src/screens/MainScreen.tsx
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import {
   View,
@@ -53,18 +52,12 @@ export default function MainScreen({
   const [keyword, setKeyword] = useState("");
   const [viewedCount, setViewedCount] = useState(0);
   const [displayName, setDisplayName] = useState(nickname);
-
-  // 🔹 Firestore에서 가져온 게시글 목록
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // 🔹 각 게시글의 댓글 개수 (postId -> count)
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>(
     {}
   );
-  const commentUnsubsRef = useRef<(() => void)[]>([]); // 댓글 리스너 정리용
-
-  // 🔹 Toast 상태
+  const commentUnsubsRef = useRef<(() => void)[]>([]);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState<"success" | "error">("success");
@@ -87,7 +80,6 @@ export default function MainScreen({
     }
   }, [nickname]);
 
-  // 🔥 Firestore에서 게시글 전체 조회 (실시간 반영) + 각 글의 댓글 수 실시간 구독
   useEffect(() => {
     const postsRef = collection(db, "posts");
     const q = query(postsRef, orderBy("createdAt", "desc"));
@@ -95,7 +87,6 @@ export default function MainScreen({
     const unsubscribePosts = onSnapshot(
       q,
       (snapshot) => {
-        // 1) 게시글 목록 상태 업데이트
         const nextPosts: Post[] = snapshot.docs.map((docSnap) => {
           const data = docSnap.data() as any;
           return {
@@ -108,11 +99,9 @@ export default function MainScreen({
         setPosts(nextPosts);
         setIsLoading(false);
 
-        // 2) 이전 댓글 리스너 전부 해제
         commentUnsubsRef.current.forEach((unsub) => unsub());
         commentUnsubsRef.current = [];
 
-        // 3) 새로 가져온 각 게시글에 대해 댓글 컬렉션 구독
         nextPosts.forEach((post) => {
           const commentsRef = collection(db, "posts", post.id, "comments");
           const cq = query(commentsRef, orderBy("createdAt", "asc"));
@@ -122,11 +111,10 @@ export default function MainScreen({
             (cSnap) => {
               setCommentCounts((prev) => ({
                 ...prev,
-                [post.id]: cSnap.size, // ✅ 상세 화면처럼 실제 댓글 개수 사용
+                [post.id]: cSnap.size,
               }));
             },
             (error) => {
-              console.log("comments count subscribe error:", error);
               setCommentCounts((prev) => ({
                 ...prev,
                 [post.id]: prev[post.id] ?? 0,
@@ -137,7 +125,6 @@ export default function MainScreen({
           commentUnsubsRef.current.push(unsub);
         });
 
-        // 댓글 하나도 없는 글은 0으로 초기화
         setCommentCounts((prev) => {
           const merged = { ...prev };
           nextPosts.forEach((p) => {
@@ -147,7 +134,6 @@ export default function MainScreen({
         });
       },
       (error) => {
-        console.log("🔥 get posts error:", error);
         setIsLoading(false);
         showToast("게시글을 불러오지 못했습니다.", "error");
       }
@@ -160,7 +146,6 @@ export default function MainScreen({
     };
   }, [nickname]);
 
-  // 🔹 Create 화면에서 돌아올 때 전달된 Toast 처리
   useEffect(() => {
     if (route.params?.toastMessage) {
       showToast(route.params.toastMessage, route.params.toastType || "success");
@@ -168,7 +153,6 @@ export default function MainScreen({
     }
   }, [route.params, navigation]);
 
-  // 🔍 검색 필터
   const filteredPosts = useMemo(() => {
     if (!keyword.trim()) return posts;
     const lower = keyword.toLowerCase();
@@ -187,7 +171,6 @@ export default function MainScreen({
       await signOut(auth);
       navigation.navigate("Signin");
     } catch (error) {
-      console.log("logout error:", error);
       showToast("로그아웃에 실패했습니다.", "error");
     }
   };
@@ -207,7 +190,6 @@ export default function MainScreen({
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* 헤더 */}
         <View style={styles.header}>
           <View>
             <Text style={styles.headerHello}>Hello,</Text>
@@ -221,8 +203,6 @@ export default function MainScreen({
             <Text style={styles.logoutButtonText}>로그아웃</Text>
           </TouchableOpacity>
         </View>
-
-        {/* 검색 */}
         <View style={styles.searchWrapper}>
           <SearchBar
             value={keyword}
@@ -231,15 +211,11 @@ export default function MainScreen({
             placeholder="게시글 제목을 입력해주세요."
           />
         </View>
-
-        {/* 진행도 게이지 */}
         <View style={styles.gaugeWrapper}>
           <View style={styles.gaugeBackground}>
             <View style={[styles.gaugeFill, { width: `${progress * 100}%` }]} />
           </View>
         </View>
-
-        {/* 상단 버튼 */}
         <View style={styles.topActionRow}>
           <View style={{ flex: 1 }} />
           <TouchableOpacity
@@ -250,8 +226,6 @@ export default function MainScreen({
             <Text style={styles.createButtonText}>게시글 작성</Text>
           </TouchableOpacity>
         </View>
-
-        {/* 게시글 리스트 */}
         {isLoading ? (
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
             <Text>게시글을 불러오는 중입니다...</Text>
@@ -268,7 +242,6 @@ export default function MainScreen({
                 title={item.title}
                 contents={item.contents}
                 author={item.author}
-                // ✅ 상세 화면과 동일하게, 실제 댓글 수 사용
                 commentCount={commentCounts[item.id] ?? 0}
                 onPress={() => {
                   navigation.navigate("Detail", { postId: item.id });
@@ -285,8 +258,6 @@ export default function MainScreen({
           />
         )}
       </View>
-
-      {/* 토스트 */}
       <ToastMessage
         visible={toastVisible}
         message={toastMessage}

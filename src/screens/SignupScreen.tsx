@@ -25,13 +25,10 @@ export default function SignupScreen({ navigation }: Props) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
-
-  // ✅ Toast 상태
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] =
     useState<"success" | "error">("error");
-
   const showToast = (message: string, type: "success" | "error" = "error") => {
     setToastType(type);
     setToastMessage(message);
@@ -79,18 +76,11 @@ export default function SignupScreen({ navigation }: Props) {
       await updateProfile(user, {
         displayName: name,
       });
-
-      console.log("회원가입 성공:", user.email, user.uid);
-
-      // ✅ 여기서는 토스트를 직접 띄우지 않고,
-      //    SigninScreen이 토스트를 띄우도록 메시지만 넘겨준다.
       navigation.navigate("Signin", {
         toastMessage: "회원가입이 완료되었습니다.",
         toastType: "success",
       });
     } catch (error: any) {
-      console.log("회원가입 오류:", error);
-
       if (error.code === "auth/email-already-in-use") {
         showToast("이미 사용 중인 이메일입니다.", "error");
       } else if (error.code === "auth/invalid-email") {
@@ -127,7 +117,6 @@ export default function SignupScreen({ navigation }: Props) {
                   resizeMode="contain"
                 />
               </TouchableOpacity>
-
               <View style={styles.iconCircle}>
                 <Image
                   source={require("../../assets/MainIcon.png")}
@@ -136,11 +125,8 @@ export default function SignupScreen({ navigation }: Props) {
                 />
               </View>
             </View>
-
             <View style={styles.formContainer}>
               <Text style={styles.title}>Signup</Text>
-
-              {/* Email */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>Email</Text>
                 <View style={styles.inputRow}>
@@ -169,8 +155,6 @@ export default function SignupScreen({ navigation }: Props) {
                   <Text style={styles.errorText}>{emailError}</Text>
                 )}
               </View>
-
-              {/* Name */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>Name</Text>
                 <View style={styles.inputRow}>
@@ -196,8 +180,6 @@ export default function SignupScreen({ navigation }: Props) {
                   </View>
                 </View>
               </View>
-
-              {/* Password */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>Password</Text>
                 <View style={styles.inputRow}>
@@ -224,8 +206,6 @@ export default function SignupScreen({ navigation }: Props) {
                   </View>
                 </View>
               </View>
-
-              {/* Confirm Password */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>ConfirmPassword</Text>
                 <View style={styles.inputRow}>
@@ -252,8 +232,6 @@ export default function SignupScreen({ navigation }: Props) {
                   </View>
                 </View>
               </View>
-
-              {/* 회원가입 버튼 */}
               <TouchableOpacity
                 style={[
                   styles.primaryButton,
@@ -268,8 +246,6 @@ export default function SignupScreen({ navigation }: Props) {
             </View>
           </View>
         </ScrollView>
-
-        {/* ✅ ToastMessage */}
         <ToastMessage
           visible={toastVisible}
           message={toastMessage}

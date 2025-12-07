@@ -79,7 +79,6 @@ export default function SigninScreen({ navigation, route }: Props) {
       setLoading(true);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log("로그인 성공:", user.email, user.uid);
       navigation.reset({
         index: 0,
         routes: [
@@ -93,7 +92,6 @@ export default function SigninScreen({ navigation, route }: Props) {
         ],
       });
     } catch (error: any) {
-      console.log("로그인 오류:", error.code, error.message);
 
       if (
         error.code === "auth/user-not-found" ||

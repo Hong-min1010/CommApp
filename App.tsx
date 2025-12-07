@@ -1,5 +1,3 @@
-// App.tsx (루트)
-
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -10,11 +8,6 @@ import MainScreen from "./src/screens/MainScreen";
 import CreatePostScreen from "./src/screens/CreatePostScreen";
 import PostDetailScreen from "./src/screens/PostDetailScreen";
 import EditPostScreen from "./src/screens/EditPostScreen";
-
-// 📱 화면들
-
-// 필요하면 추후 개발용 프리뷰를 이렇게 추가해도 됨
-// import ComponentsPreviewScreen from "./src/screens/ComponentsPreview";
 
 export type RootStackParamList = {
   Landing: undefined;
@@ -39,7 +32,6 @@ export type RootStackParamList = {
     contents: string;
     imageUrl: string | null;
   };
-  // Preview?: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

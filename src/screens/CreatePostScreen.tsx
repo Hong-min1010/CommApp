@@ -15,10 +15,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import InputBox from "../components/InputBox";
 
-// 🔥 Firebase
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-// 📸 이미지 픽커
 import * as ImagePicker from "expo-image-picker";
 import { auth, db, storage } from "../../firebaseconfig";
 import { getStorage } from "firebase/storage";
@@ -68,10 +66,8 @@ export default function CreatePostScreen({ navigation }: Props) {
 
       const storageRef = ref(storage, filename);
 
-      // 🔥 실제 업로드
       await uploadBytes(storageRef, blob);
 
-      // 🔥 업로드 완료 후 다운로드 URL 가져오기
       const downloadUrl = await getDownloadURL(storageRef);
       return downloadUrl;
     } catch (error: any) {
@@ -102,7 +98,6 @@ export default function CreatePostScreen({ navigation }: Props) {
 
       if (imageUri) {
         imageUrl = await uploadImageToStorage(imageUri);
-        console.log("✅ imageUrl from storage:", imageUrl);
       }
 
       const user = auth.currentUser;
@@ -248,7 +243,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-  /* Header */
   header: {
     height: HEADER_HEIGHT,
     backgroundColor: "#4CAF7D",

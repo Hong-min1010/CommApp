@@ -1,4 +1,3 @@
-// src/components/ToastMessage.tsx
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, ViewStyle } from "react-native";
 

@@ -1,4 +1,3 @@
-// src/screens/EditPostScreen.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -16,13 +15,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { RouteProp } from "@react-navigation/native";
 import InputBox from "../components/InputBox";
-
-// Firebase
 import { doc, updateDoc } from "firebase/firestore";
 import { db, storage } from "../../firebaseconfig";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-// 이미지 픽커
 import * as ImagePicker from "expo-image-picker";
 
 type RootStackParamList = {
@@ -49,12 +44,9 @@ export default function EditPostScreen({ navigation, route }: Props) {
 
   const [title, setTitle] = useState(initialTitle);
   const [contents, setContents] = useState(initialContents);
-
-  // 서버에 이미 저장돼 있는 이미지 URL
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(
     initialImageUrl
   );
-  // 새로 선택한 로컬 이미지 URI
   const [localImageUri, setLocalImageUri] = useState<string | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,17 +67,16 @@ export default function EditPostScreen({ navigation, route }: Props) {
     });
 
     if (!result.canceled) {
-      setLocalImageUri(result.assets[0].uri); // 새 이미지 선택
+      setLocalImageUri(result.assets[0].uri);
     }
   };
 
   const handleDeleteImage = () => {
     setLocalImageUri(null);
-    setCurrentImageUrl(null); // 이미지 없이 저장
+    setCurrentImageUrl(null);
   };
 
   const uploadImageIfNeeded = async (): Promise<string | null> => {
-    // 새로 고른 이미지가 있다면 업로드
     if (localImageUri) {
       const response = await fetch(localImageUri);
       const blob = await response.blob();
@@ -100,7 +91,6 @@ export default function EditPostScreen({ navigation, route }: Props) {
       return downloadUrl;
     }
 
-    // 새 이미지가 없으면 기존 이미지 URL 유지(or null)
     return currentImageUrl;
   };
 
@@ -126,7 +116,7 @@ export default function EditPostScreen({ navigation, route }: Props) {
       await updateDoc(postRef, {
         title: trimmedTitle,
         contents: trimmedContents,
-        imageUrl: newImageUrl, // null 가능
+        imageUrl: newImageUrl,
       });
 
       navigation.goBack();
@@ -187,7 +177,6 @@ export default function EditPostScreen({ navigation, route }: Props) {
             />
           </View>
 
-          {/* ✅ CreatePostScreen과 동일한 스타일의 이미지 첨부 박스 */}
           <TouchableOpacity
             style={styles.imageAttachBox}
             activeOpacity={0.8}
@@ -213,7 +202,6 @@ export default function EditPostScreen({ navigation, route }: Props) {
             )}
           </TouchableOpacity>
 
-          {/* 이미지를 가진 경우에만 수정/삭제 버튼 노출 */}
           {hasImage && (
             <View style={styles.imageButtonRow}>
               <TouchableOpacity
@@ -323,8 +311,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111827",
   },
-
-  // 🔽 CreatePostScreen에서 가져온 스타일들
   imageAttachBox: {
     marginTop: 8,
     borderRadius: 16,
@@ -350,7 +336,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-
   imageButtonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
