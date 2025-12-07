@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import InputBox from "../components/InputBox";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../../firebaseconfig";
+import ToastMessage from "../components/ToastMessage";
 
 type Props = {
   navigation: any;
@@ -25,6 +26,19 @@ export default function SignupScreen({ navigation }: Props) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
 
+  // ✅ Toast 상태
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] =
+    useState<"success" | "error">("error");
+
+  const showToast = (message: string, type: "success" | "error" = "error") => {
+    setToastType(type);
+    setToastMessage(message);
+    setToastVisible(true);
+    setTimeout(() => setToastVisible(false), 1500);
+  };
+
   const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
   const isSignUpEnabled =
@@ -35,23 +49,30 @@ export default function SignupScreen({ navigation }: Props) {
 
   const handleSignUp = async () => {
     setEmailError(null);
+
     if (!emailRegex.test(email)) {
-      setEmailError("올바른 이메일 형식으로 입력해주세요.");
+      const msg = "올바른 이메일 형식으로 입력해주세요.";
+      setEmailError(msg);
+      showToast(msg, "error");
       return;
     }
 
     if (password.length < 6) {
-      alert("비밀번호는 최소 6자 이상이어야 합니다.");
+      showToast("비밀번호는 최소 6자 이상이어야 합니다.", "error");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("비밀번호가 서로 일치하지 않습니다.");
+      showToast("비밀번호가 서로 일치하지 않습니다.", "error");
       return;
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
       const user = userCredential.user;
 
@@ -61,17 +82,24 @@ export default function SignupScreen({ navigation }: Props) {
 
       console.log("회원가입 성공:", user.email, user.uid);
 
-      navigation.navigate("Signin")
-
+      // ✅ 여기서는 토스트를 직접 띄우지 않고,
+      //    SigninScreen이 토스트를 띄우도록 메시지만 넘겨준다.
+      navigation.navigate("Signin", {
+        toastMessage: "회원가입이 완료되었습니다.",
+        toastType: "success",
+      });
     } catch (error: any) {
       console.log("회원가입 오류:", error);
 
       if (error.code === "auth/email-already-in-use") {
-        alert("이미 사용 중인 이메일입니다.");
+        showToast("이미 사용 중인 이메일입니다.", "error");
       } else if (error.code === "auth/invalid-email") {
-        alert("유효하지 않은 이메일입니다.");
+        showToast("유효하지 않은 이메일입니다.", "error");
       } else {
-        alert("회원가입 중 오류가 발생했습니다. 다시 시도해주세요.");
+        showToast(
+          "회원가입 중 오류가 발생했습니다. 다시 시도해주세요.",
+          "error"
+        );
       }
     }
   };
@@ -108,8 +136,11 @@ export default function SignupScreen({ navigation }: Props) {
                 />
               </View>
             </View>
+
             <View style={styles.formContainer}>
               <Text style={styles.title}>Signup</Text>
+
+              {/* Email */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>Email</Text>
                 <View style={styles.inputRow}>
@@ -138,6 +169,8 @@ export default function SignupScreen({ navigation }: Props) {
                   <Text style={styles.errorText}>{emailError}</Text>
                 )}
               </View>
+
+              {/* Name */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>Name</Text>
                 <View style={styles.inputRow}>
@@ -163,6 +196,8 @@ export default function SignupScreen({ navigation }: Props) {
                   </View>
                 </View>
               </View>
+
+              {/* Password */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>Password</Text>
                 <View style={styles.inputRow}>
@@ -189,6 +224,8 @@ export default function SignupScreen({ navigation }: Props) {
                   </View>
                 </View>
               </View>
+
+              {/* Confirm Password */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.label}>ConfirmPassword</Text>
                 <View style={styles.inputRow}>
@@ -215,6 +252,8 @@ export default function SignupScreen({ navigation }: Props) {
                   </View>
                 </View>
               </View>
+
+              {/* 회원가입 버튼 */}
               <TouchableOpacity
                 style={[
                   styles.primaryButton,
@@ -229,6 +268,13 @@ export default function SignupScreen({ navigation }: Props) {
             </View>
           </View>
         </ScrollView>
+
+        {/* ✅ ToastMessage */}
+        <ToastMessage
+          visible={toastVisible}
+          message={toastMessage}
+          type={toastType}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -375,8 +421,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-  backIcon : {
-    width:20,
+  backIcon: {
+    width: 20,
     height: 20,
-  }
+  },
 });

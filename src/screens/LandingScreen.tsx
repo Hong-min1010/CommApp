@@ -1,3 +1,4 @@
+// src/screens/LandingScreen.tsx
 import React, { useEffect, useRef } from "react";
 import {
   SafeAreaView,
@@ -9,7 +10,11 @@ import {
   Easing,
 } from "react-native";
 
-export default function LandingScreen() {
+type Props = {
+  navigation: any; // 필요하면 여기 나중에 네이티브 스택 타입으로 바꿔도 됨
+};
+
+export default function LandingScreen({ navigation }: Props) {
   const textOpacity = useRef(new Animated.Value(0)).current;
   const textTranslateY = useRef(new Animated.Value(20)).current;
 
@@ -17,6 +22,7 @@ export default function LandingScreen() {
   const iconScale = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
+    // 텍스트 페이드 + 위로 슬라이드
     Animated.timing(textOpacity, {
       toValue: 1,
       duration: 600,
@@ -31,6 +37,7 @@ export default function LandingScreen() {
       useNativeDriver: true,
     }).start();
 
+    // 아이콘 등장 + 살짝 통통 튀는 애니메이션
     Animated.sequence([
       Animated.delay(200),
       Animated.parallel([
@@ -64,7 +71,17 @@ export default function LandingScreen() {
         ])
       ),
     ]).start();
-  }, [textOpacity, textTranslateY, iconOpacity, iconScale]);
+
+    // ✅ 1.5초 뒤 Main 화면으로 이동
+    const timer = setTimeout(() => {
+      navigation.replace("Signin");
+      // 만약 뒤로가기 눌렀을 때 Landing 다시 보고 싶으면 navigate("Main") 사용
+      // navigation.navigate("Main");
+    }, 1500);
+
+    // cleanup
+    return () => clearTimeout(timer);
+  }, [navigation, textOpacity, textTranslateY, iconOpacity, iconScale]);
 
   return (
     <SafeAreaView style={styles.safeArea}>

@@ -9,9 +9,22 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InputBox from "../components/InputBox";
+
+// 🔥 Firebase
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+// 📸 이미지 픽커
+import * as ImagePicker from "expo-image-picker";
+import { auth, db, storage } from "../../firebaseconfig";
+import { getStorage } from "firebase/storage";
+import ToastMessage from "../components/ToastMessage";
+
+console.log("🔎 storageBucket(runtime):", getStorage().app.options.storageBucket);
 
 type Props = {
   navigation: any;
@@ -20,13 +33,112 @@ type Props = {
 export default function CreatePostScreen({ navigation }: Props) {
   const [title, setTitle] = useState("");
   const [contents, setContents] = useState("");
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
 
-  const handleSubmit = () => {
-    console.log("create post", { title, contents });
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("권한 필요", "이미지를 첨부하려면 갤러리 접근 권한이 필요합니다.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+    }
   };
 
-  const handlePickImage = () => {
-    console.log("pick image");
+  const uploadImageToStorage = async (uri: string) => {
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      const filename = `posts/${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2)}.jpg`;
+
+      const storageRef = ref(storage, filename);
+
+      // 🔥 실제 업로드
+      await uploadBytes(storageRef, blob);
+
+      // 🔥 업로드 완료 후 다운로드 URL 가져오기
+      const downloadUrl = await getDownloadURL(storageRef);
+      return downloadUrl;
+    } catch (error: any) {
+      Alert.alert(
+        "업로드 오류",
+        error?.message ?? "이미지 업로드 중 오류가 발생했습니다."
+      );
+      throw error;
+    }
+  };
+  
+
+
+  const handleSubmit = async () => {
+    if (!title.trim()) {
+      Alert.alert("알림", "제목을 입력해주세요.");
+      return;
+    }
+    if (!contents.trim()) {
+      Alert.alert("알림", "내용을 입력해주세요.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      let imageUrl: string | null = null;
+
+      if (imageUri) {
+        imageUrl = await uploadImageToStorage(imageUri);
+        console.log("✅ imageUrl from storage:", imageUrl);
+      }
+
+      const user = auth.currentUser;
+
+      if (!user) {
+        Alert.alert("알림", "로그인 후에만 게시글을 작성할 수 있습니다.");
+        return;
+      }
+
+      const authorName = user?.displayName || "사용자";
+
+      await addDoc(collection(db, "posts"), {
+        title: title.trim(),
+        contents: contents.trim(),
+        imageUrl,
+        createdAt: serverTimestamp(),
+        authorId: user ? user.uid : null,
+        commentCount: 0,
+        authorName,
+      });
+
+      setToastType("success");
+      setToastMessage("게시글이 등록되었습니다.");
+      setToastVisible(true);
+
+      setTimeout(() => {
+        setToastVisible(false);
+        navigation.goBack();
+      }, 1200);
+    } catch (error) {
+      setToastType("error");
+      setToastMessage("게시글 등록 중 오류가 발생했습니다.");
+      setToastVisible(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -64,6 +176,7 @@ export default function CreatePostScreen({ navigation }: Props) {
               inputStyle={styles.titleInput}
             />
           </View>
+
           <View style={styles.fieldBlock}>
             <Text style={styles.label}>내용</Text>
             <TextInput
@@ -74,30 +187,55 @@ export default function CreatePostScreen({ navigation }: Props) {
               multiline
               textAlignVertical="top"
               style={styles.contentsInput}
+              maxLength={300}
             />
           </View>
+
           <TouchableOpacity
             style={styles.imageAttachBox}
             activeOpacity={0.8}
             onPress={handlePickImage}
           >
-            <Image
-              source={require("../../assets/ImageIcon.png")}
-              style={styles.cameraIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.imageAttachText}>이미지 첨부</Text>
+            {imageUri ? (
+              <>
+                <Image
+                  source={{ uri: imageUri }}
+                  style={styles.previewImage}
+                  resizeMode="cover"
+                />
+              </>
+            ) : (
+              <>
+                <Image
+                  source={require("../../assets/ImageIcon.png")}
+                  style={styles.cameraIcon}
+                  resizeMode="contain"
+                />
+                <Text style={styles.imageAttachText}>이미지 첨부(선택)</Text>
+              </>
+            )}
           </TouchableOpacity>
+
           <View style={styles.bottomButtonWrapper}>
             <TouchableOpacity
-              style={styles.submitButton}
+              style={[styles.submitButton, isSubmitting && { opacity: 0.7 }]}
               activeOpacity={0.8}
               onPress={handleSubmit}
+              disabled={isSubmitting}
             >
-              <Text style={styles.submitButtonText}>작성 완료</Text>
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.submitButtonText}>작성 완료</Text>
+              )}
             </TouchableOpacity>
           </View>
         </ScrollView>
+        <ToastMessage
+          visible={toastVisible}
+          message={toastMessage}
+          type={toastType}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -183,6 +321,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 40,
+    overflow: "hidden",
   },
   cameraIcon: {
     width: 48,
@@ -192,6 +331,10 @@ const styles = StyleSheet.create({
   imageAttachText: {
     fontSize: 14,
     color: "#111827",
+  },
+  previewImage: {
+    width: "100%",
+    height: "100%",
   },
   bottomButtonWrapper: {
     marginBottom: 12,
@@ -208,8 +351,8 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#FFFFFF",
   },
-  backIcon : {
-    width:20,
+  backIcon: {
+    width: 20,
     height: 20,
-  }
+  },
 });

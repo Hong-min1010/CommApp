@@ -1,5 +1,4 @@
-// src/screens/SigninScreen.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -15,12 +14,23 @@ import InputBox from "../components/InputBox";
 import ToastMessage from "../components/ToastMessage";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebaseconfig";
+import { RouteProp } from "@react-navigation/native";
 
 type Props = {
   navigation: any;
+  route: RouteProp<RootStackParamList, "Signin">;
 };
 
-export default function SigninScreen({ navigation }: Props) {
+type RootStackParamList = {
+  Signin:
+    | {
+        toastMessage?: string;
+        toastType?: "success" | "error";
+      }
+    | undefined;
+};
+
+export default function SigninScreen({ navigation, route }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -43,6 +53,16 @@ export default function SigninScreen({ navigation }: Props) {
       setToastVisible(false);
     }, 1500);
   };
+
+  useEffect(() => {
+    if (route.params?.toastMessage) {
+      showToast(
+        route.params.toastMessage,
+        route.params.toastType || "success"
+      );
+      navigation.setParams({ toastMessage: undefined, toastType: undefined });
+    }
+  }, [route.params, navigation]);
 
   const handleLogin = async () => {
     setEmailError(null);
@@ -182,7 +202,7 @@ export default function SigninScreen({ navigation }: Props) {
                 activeOpacity={0.8}
               >
                 <Text style={styles.loginButtonText}>
-                  {loading ? "로그인 중..." : "Login"}
+                  {loading ? "로그인 중..." : "로그인"}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -324,7 +344,7 @@ const styles = StyleSheet.create({
     marginTop: 32,
     height: 52,
     borderRadius: 12,
-    backgroundColor: "#4CAF7D",
+    backgroundColor: "#888888ff",
     alignItems: "center",
     justifyContent: "center",
   },
