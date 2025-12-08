@@ -9,7 +9,6 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -40,7 +39,9 @@ export default function CreatePostScreen({ navigation }: Props) {
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("권한 필요", "이미지를 첨부하려면 갤러리 접근 권한이 필요합니다.");
+      setToastType("error");
+      setToastMessage("이미지를 첨부하려면 갤러리 접근 권한이 필요합니다.");
+      setToastVisible(true);
       return;
     }
 
@@ -71,10 +72,9 @@ export default function CreatePostScreen({ navigation }: Props) {
       const downloadUrl = await getDownloadURL(storageRef);
       return downloadUrl;
     } catch (error: any) {
-      Alert.alert(
-        "업로드 오류",
-        error?.message ?? "이미지 업로드 중 오류가 발생했습니다."
-      );
+      setToastType("error");
+      setToastMessage("이미지 업로드 중 오류가 발생했습니다.");
+      setToastVisible(true);
       throw error;
     }
   };
@@ -83,11 +83,15 @@ export default function CreatePostScreen({ navigation }: Props) {
 
   const handleSubmit = async () => {
     if (!title.trim()) {
-      Alert.alert("알림", "제목을 입력해주세요.");
+      setToastType("error");
+      setToastMessage("제목을 입력해주세요.");
+      setToastVisible(true);
       return;
     }
     if (!contents.trim()) {
-      Alert.alert("알림", "내용을 입력해주세요.");
+      setToastType("error");
+      setToastMessage("내용을 입력해주세요.");
+      setToastVisible(true);
       return;
     }
 
@@ -103,7 +107,9 @@ export default function CreatePostScreen({ navigation }: Props) {
       const user = auth.currentUser;
 
       if (!user) {
-        Alert.alert("알림", "로그인 후에만 게시글을 작성할 수 있습니다.");
+        setToastType("error");
+        setToastMessage("로그인 후에만 게시글을 작성할 수 있습니다.");
+        setToastVisible(true);
         return;
       }
 

@@ -10,7 +10,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { RouteProp } from "@react-navigation/native";
@@ -224,7 +223,9 @@ export default function PostDetailScreen({ navigation, route }: Props) {
     if (!trimmed) return;
 
     if (!currentUser) {
-      Alert.alert("알림", "로그인 후 댓글을 작성할 수 있습니다.");
+      setToastType("error");
+      setToastMessage("로그인 후 댓글을 작성할 수 있습니다.");
+      setToastVisible(true);
       return;
     }
 

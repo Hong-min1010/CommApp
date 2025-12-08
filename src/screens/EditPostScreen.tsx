@@ -10,7 +10,6 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { RouteProp } from "@react-navigation/native";
@@ -50,13 +49,18 @@ export default function EditPostScreen({ navigation, route }: Props) {
   const [localImageUri, setLocalImageUri] = useState<string | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastVisible, setToastVisible] = useState(false);
 
   const hasImage = !!(localImageUri || currentImageUrl);
 
   const handleChangeImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("권한 필요", "이미지를 첨부하려면 갤러리 접근 권한이 필요합니다.");
+      setToastType("error");
+      setToastMessage("이미지를 첨부하려면 갤러리 접근 권한이 필요합니다.");
+      setToastVisible(true);
       return;
     }
 
@@ -99,11 +103,15 @@ export default function EditPostScreen({ navigation, route }: Props) {
     const trimmedContents = contents.trim();
 
     if (!trimmedTitle) {
-      Alert.alert("알림", "제목을 입력해주세요.");
+      setToastType("error");
+      setToastMessage("제목을 입력해주세요.");
+      setToastVisible(true);
       return;
     }
     if (!trimmedContents) {
-      Alert.alert("알림", "내용을 입력해주세요.");
+      setToastType("error");
+      setToastMessage("내용을 입력해주세요.");
+      setToastVisible(true);
       return;
     }
 
@@ -122,7 +130,9 @@ export default function EditPostScreen({ navigation, route }: Props) {
       navigation.goBack();
     } catch (error) {
       console.log("update post error:", error);
-      Alert.alert("알림", "게시글 수정 중 오류가 발생했습니다.");
+      setToastType("error");
+      setToastMessage("게시글 수정 중 오류가 발생했습니다.");
+      setToastVisible(true);
     } finally {
       setIsSubmitting(false);
     }
